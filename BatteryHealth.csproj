@@ -9,4 +9,8 @@
     <RootNamespace>BatteryHealth</RootNamespace>
     <ApplicationIcon Condition="Exists('app.ico')">app.ico</ApplicationIcon>
   </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System.Management" />
+    <Resource Include="app.ico" />
+  </ItemGroup>
 </Project>
