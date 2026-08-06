@@ -1,0 +1,39 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore
+        run: msbuild BatteryHealth.csproj /t:Restore /p:Configuration=Release
+
+      - name: Build
+        run: msbuild BatteryHealth.csproj /p:Configuration=Release /p:Platform="Any CPU" /m
+
+      - name: Package
+        shell: powershell
+        run: Compress-Archive -Path bin\Release\net48\BatteryHealth.exe -DestinationPath BatteryHealth-win.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BatteryHealth-win
+          path: BatteryHealth-win.zip
+          if-no-files-found: error

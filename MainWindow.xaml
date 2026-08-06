@@ -1,0 +1,70 @@
+<Window x:Class="BatteryHealth.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Battery Health" Width="480" Height="650"
+        MinWidth="420" MinHeight="560" WindowStartupLocation="CenterScreen"
+        Background="#F5F7FA" FontFamily="Segoe UI">
+  <Window.Resources>
+    <Style x:Key="LabelStyle" TargetType="TextBlock">
+      <Setter Property="Margin" Value="0,7"/><Setter Property="Foreground" Value="#667085"/>
+    </Style>
+    <Style x:Key="ValueStyle" TargetType="TextBlock">
+      <Setter Property="Margin" Value="22,7,0,7"/><Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="#263247"/><Setter Property="TextAlignment" Value="Right"/>
+    </Style>
+  </Window.Resources>
+  <Grid Margin="28">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
+
+    <TextBlock Text="电池健康" FontSize="18" FontWeight="SemiBold" Foreground="#172033" />
+
+    <Border Grid.Row="1" Margin="0,22,0,18" Padding="30" Background="White" CornerRadius="20">
+      <StackPanel HorizontalAlignment="Stretch">
+        <TextBlock x:Name="HealthText" Text="—" FontSize="76" FontWeight="Bold"
+                   HorizontalAlignment="Center" Foreground="#2563EB" />
+        <TextBlock x:Name="StatusText" Text="正在读取电池…" Margin="0,0,0,24" FontSize="17"
+                   HorizontalAlignment="Center" Foreground="#556176" />
+        <ProgressBar x:Name="HealthBar" Height="10" Minimum="0" Maximum="100" Value="0"
+                     Foreground="#2563EB" Background="#E7ECF4" BorderThickness="0" />
+
+        <Button x:Name="DetailsButton" Content="查看详细信息" Margin="0,28,0,0" Padding="14,10"
+                Click="DetailsButton_Click" Background="#EEF4FF" Foreground="#1D4ED8"
+                BorderThickness="0" Cursor="Hand" />
+
+        <Grid x:Name="DetailsPanel" Margin="0,26,0,0" Visibility="Collapsed">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <Grid.RowDefinitions>
+            <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+            <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+          </Grid.RowDefinitions>
+          <TextBlock Text="电池名称" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="NameValue" Grid.Column="1" Style="{StaticResource ValueStyle}" />
+          <TextBlock Grid.Row="1" Text="制造商" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="ManufacturerValue" Grid.Row="1" Grid.Column="1" Style="{StaticResource ValueStyle}" />
+          <TextBlock Grid.Row="2" Text="设计容量" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="DesignValue" Grid.Row="2" Grid.Column="1" Style="{StaticResource ValueStyle}" />
+          <TextBlock Grid.Row="3" Text="当前满充容量" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="FullValue" Grid.Row="3" Grid.Column="1" Style="{StaticResource ValueStyle}" />
+          <TextBlock Grid.Row="4" Text="损耗" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="WearValue" Grid.Row="4" Grid.Column="1" Style="{StaticResource ValueStyle}" />
+          <TextBlock Grid.Row="5" Text="循环次数" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="CycleValue" Grid.Row="5" Grid.Column="1" Style="{StaticResource ValueStyle}" />
+          <TextBlock Grid.Row="6" Text="当前电量" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="ChargeValue" Grid.Row="6" Grid.Column="1" Style="{StaticResource ValueStyle}" />
+          <TextBlock Grid.Row="7" Text="当前状态" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="PowerValue" Grid.Row="7" Grid.Column="1" Style="{StaticResource ValueStyle}" />
+        </Grid>
+      </StackPanel>
+    </Border>
+
+    <TextBlock Grid.Row="2" Text="数据只在本机读取，不联网、不驻留后台" FontSize="12"
+               HorizontalAlignment="Center" Foreground="#8A94A6" />
+  </Grid>
+</Window>
