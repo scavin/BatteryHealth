@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using System;
+using System.Management;
 
 namespace BatteryHealth;
 
@@ -52,6 +53,21 @@ internal static class BatteryReader
 
     public static BatterySnapshot? Read()
     {
+        try
+        {
+            var native = ReadNative();
+            if (native is not null) return native;
+        }
+        catch (Exception)
+        {
+            // Some OEM battery drivers expose data to WMI but reject direct IOCTL queries.
+        }
+
+        return ReadWmi();
+    }
+
+    private static BatterySnapshot? ReadNative()
+    {
         var batteryClassGuid = BatteryClassGuid;
         var set = SetupDiGetClassDevs(ref batteryClassGuid, null, IntPtr.Zero, DigcfPresent | DigcfDeviceInterface);
         if (set == new IntPtr(-1)) throw new Win32Exception(Marshal.GetLastWin32Error());
@@ -74,8 +90,7 @@ internal static class BatteryReader
                     Marshal.WriteInt32(detail, IntPtr.Size == 8 ? 8 : 6);
                     if (!SetupDiGetDeviceInterfaceDetail(set, ref data, detail, needed, out _, IntPtr.Zero)) continue;
                     var path = Marshal.PtrToStringUni(detail + 4) ?? string.Empty;
-                    using var handle = CreateFile(path, GenericRead | GenericWrite, FileShareRead | FileShareWrite,
-                        IntPtr.Zero, OpenExisting, 0, IntPtr.Zero);
+                    using var handle = OpenBattery(path);
                     if (handle.IsInvalid) continue;
 
                     var snapshot = ReadFromHandle(handle);
@@ -88,6 +103,91 @@ internal static class BatteryReader
 
         return null;
     }
+
+    private static SafeFileHandle OpenBattery(string path)
+    {
+        var handle = CreateFile(path, GenericRead | GenericWrite, FileShareRead | FileShareWrite,
+            IntPtr.Zero, OpenExisting, 0, IntPtr.Zero);
+        if (!handle.IsInvalid) return handle;
+
+        handle.Dispose();
+        return CreateFile(path, GenericRead, FileShareRead | FileShareWrite,
+            IntPtr.Zero, OpenExisting, 0, IntPtr.Zero);
+    }
+
+    private static BatterySnapshot? ReadWmi()
+    {
+        try
+        {
+            var battery = QueryFirst(@"root\cimv2", "SELECT Name, Status, EstimatedChargeRemaining, BatteryStatus FROM Win32_Battery");
+            if (battery is null) return null;
+
+            var name = Convert.ToString(battery["Name"]) ?? "未知电池";
+            var charge = ToInt(battery["EstimatedChargeRemaining"]);
+            var batteryStatus = ToInt(battery["BatteryStatus"]);
+            battery.Dispose();
+
+            var staticData = QueryFirst(@"root\wmi", "SELECT DesignedCapacity, DeviceName, ManufactureName FROM BatteryStaticData");
+            var designed = ToUInt(staticData?["DesignedCapacity"]);
+            name = Convert.ToString(staticData?["DeviceName"]) ?? name;
+            var manufacturer = Convert.ToString(staticData?["ManufactureName"]) ?? "设备未提供";
+            staticData?.Dispose();
+
+            var fullData = QueryFirst(@"root\wmi", "SELECT FullChargedCapacity FROM BatteryFullChargedCapacity");
+            var full = ToUInt(fullData?["FullChargedCapacity"]);
+            fullData?.Dispose();
+
+            var cycleData = QueryFirst(@"root\wmi", "SELECT CycleCount FROM BatteryCycleCount");
+            var cycles = ToUInt(cycleData?["CycleCount"]);
+            cycleData?.Dispose();
+
+            return new BatterySnapshot(name, manufacturer, designed, full, cycles, charge, WmiPowerState(batteryStatus));
+        }
+        catch (ManagementException)
+        {
+            return null;
+        }
+    }
+
+    private static ManagementObject? QueryFirst(string scope, string query)
+    {
+        try
+        {
+            using var searcher = new ManagementObjectSearcher(scope, query);
+            foreach (ManagementObject item in searcher.Get()) return item;
+            return null;
+        }
+        catch (ManagementException)
+        {
+            return null;
+        }
+    }
+
+    private static uint? ToUInt(object? value)
+    {
+        if (value is null) return null;
+        try
+        {
+            var converted = Convert.ToUInt32(value);
+            return ValidCapacity(converted);
+        }
+        catch (Exception) { return null; }
+    }
+
+    private static int? ToInt(object? value)
+    {
+        if (value is null) return null;
+        try { return Convert.ToInt32(value); }
+        catch (Exception) { return null; }
+    }
+
+    private static string WmiPowerState(int? status) => status switch
+    {
+        1 => "使用电池",
+        2 or 3 or 11 => "使用电源",
+        >= 6 and <= 9 => "充电中",
+        _ => "状态未知"
+    };
 
     private static BatterySnapshot? ReadFromHandle(SafeFileHandle handle)
     {
