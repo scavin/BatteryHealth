@@ -1,0 +1,121 @@
+name: 设备不支持 / 无法读取电池
+description: BatteryHealth 未检测到电池、无法读取容量，或数据显示不完整时使用
+title: "[设备兼容性] "
+labels:
+  - compatibility
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。下面的信息可以帮助我们判断是设备驱动、Windows 数据源，还是 BatteryHealth 的读取逻辑问题。
+
+        提交前请先确认 Windows 自己能够识别电池。请勿上传未经检查的完整 `battery-report.html`，其中可能包含电脑名称和电池使用历史。
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前检查
+      options:
+        - label: 我使用的是 [最新版本](https://github.com/scavin/BatteryHealth/releases/latest)。
+          required: true
+        - label: Windows 设置或任务栏能够正常显示电池电量。
+          required: true
+        - label: 我已经检查并移除了输出中的个人信息。
+          required: true
+
+  - type: input
+    id: app-version
+    attributes:
+      label: BatteryHealth 版本
+      description: 可在下载文件名或 Release 页面查看。
+      placeholder: 例如 v1.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: symptom
+    attributes:
+      label: 问题类型
+      options:
+        - 提示“未检测到电池”
+        - 提示“读取失败”
+        - 健康度或容量显示“设备未提供”
+        - 循环次数等部分字段缺失
+        - 程序无法启动或闪退
+        - 数据明显不正确
+        - 其他
+    validations:
+      required: true
+
+  - type: input
+    id: computer-model
+    attributes:
+      label: 电脑品牌与完整型号
+      description: 可按 Win + R，输入 `msinfo32`，查看“系统制造商”和“系统型号”。
+      placeholder: 例如 Lenovo 小新 14 / 82XD
+    validations:
+      required: true
+
+  - type: input
+    id: windows-version
+    attributes:
+      label: Windows 版本
+      description: 可按 Win + R，输入 `winver` 查看。
+      placeholder: 例如 Windows 11 24H2，OS 内部版本 26100.x
+    validations:
+      required: true
+
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 实际表现与复现步骤
+      description: 请写明打开程序后看到的提示、哪些字段异常，以及问题是否每次都出现。
+      placeholder: |
+        1. 双击 BatteryHealth.exe
+        2. 界面显示……
+        3. 预期应该显示……
+    validations:
+      required: true
+
+  - type: textarea
+    id: win32-battery
+    attributes:
+      label: Win32_Battery 查询结果
+      description: |
+        在 PowerShell 中运行以下命令，并粘贴完整输出：
+        `Get-CimInstance Win32_Battery | Format-List Name,Status,EstimatedChargeRemaining,BatteryStatus`
+      render: powershell
+    validations:
+      required: true
+
+  - type: textarea
+    id: wmi-capacity
+    attributes:
+      label: WMI 容量查询结果
+      description: |
+        在 PowerShell 中依次运行以下命令，并粘贴输出；如果命令报错，也请保留错误文字。
+
+        `Get-CimInstance -Namespace root/wmi -ClassName BatteryStaticData | Format-List InstanceName,DeviceName,ManufactureName,DesignedCapacity`
+
+        `Get-CimInstance -Namespace root/wmi -ClassName BatteryFullChargedCapacity | Format-List InstanceName,FullChargedCapacity`
+
+        `Get-CimInstance -Namespace root/wmi -ClassName BatteryCycleCount | Format-List InstanceName,CycleCount`
+      render: powershell
+    validations:
+      required: true
+
+  - type: textarea
+    id: battery-report
+    attributes:
+      label: Windows 电池报告（可选）
+      description: |
+        可运行 `powercfg /batteryreport`。建议只粘贴或截图 **Installed batteries** 部分。
+
+        上传前请遮盖电脑名称、用户名、序列号，以及你不希望公开的使用记录。
+      placeholder: 粘贴 Installed batteries 内容，或将处理过的截图拖到这里。
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 其他信息（可选）
+      description: 可添加程序截图、电池是否更换过、BIOS/驱动更新情况等。
