@@ -7,9 +7,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        感谢反馈。下面的信息可以帮助我们判断是设备驱动、Windows 数据源，还是 BatteryHealth 的读取逻辑问题。
+        感谢反馈。请填写基本信息，并在 PowerShell 中运行表单里的两条命令。通常这些内容就足够定位兼容性问题。
 
-        提交前请先确认 Windows 自己能够识别电池。请勿上传未经检查的完整 `battery-report.html`，其中可能包含电脑名称和电池使用历史。
+        `battery-report.html` 可能包含电脑名称和电池使用历史，上传前请先检查并移除你不希望公开的内容。
 
   - type: checkboxes
     id: checks
@@ -80,26 +80,11 @@ body:
   - type: textarea
     id: win32-battery
     attributes:
-      label: Win32_Battery 查询结果
+      label: 电池查询结果
       description: |
-        在 PowerShell 中运行以下命令，并粘贴完整输出：
+        在 PowerShell 中运行下面这条命令，并粘贴完整输出：
+
         `Get-CimInstance Win32_Battery | Format-List Name,Status,EstimatedChargeRemaining,BatteryStatus`
-      render: powershell
-    validations:
-      required: true
-
-  - type: textarea
-    id: wmi-capacity
-    attributes:
-      label: WMI 容量查询结果
-      description: |
-        在 PowerShell 中依次运行以下命令，并粘贴输出；如果命令报错，也请保留错误文字。
-
-        `Get-CimInstance -Namespace root/wmi -ClassName BatteryStaticData | Format-List InstanceName,DeviceName,ManufactureName,DesignedCapacity`
-
-        `Get-CimInstance -Namespace root/wmi -ClassName BatteryFullChargedCapacity | Format-List InstanceName,FullChargedCapacity`
-
-        `Get-CimInstance -Namespace root/wmi -ClassName BatteryCycleCount | Format-List InstanceName,CycleCount`
       render: powershell
     validations:
       required: true
@@ -107,12 +92,16 @@ body:
   - type: textarea
     id: battery-report
     attributes:
-      label: Windows 电池报告（可选）
+      label: Windows 电池报告
       description: |
-        可运行 `powercfg /batteryreport`。建议只粘贴或截图 **Installed batteries** 部分。
+        在 PowerShell 中运行下面这条命令，报告会生成到桌面：
 
-        上传前请遮盖电脑名称、用户名、序列号，以及你不希望公开的使用记录。
-      placeholder: 粘贴 Installed batteries 内容，或将处理过的截图拖到这里。
+        `powercfg /batteryreport /output "$env:USERPROFILE\Desktop\battery-report.html"`
+
+        检查隐私内容后，将报告压缩为 ZIP 并拖到这里；也可以只粘贴或截图 **Installed batteries** 部分。
+      placeholder: 将处理过的报告 ZIP 或截图拖到这里。
+    validations:
+      required: true
 
   - type: textarea
     id: additional-context
