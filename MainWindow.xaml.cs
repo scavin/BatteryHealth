@@ -7,8 +7,6 @@ namespace BatteryHealth;
 
 public partial class MainWindow : Window
 {
-    private bool _detailsVisible;
-
     public MainWindow()
     {
         InitializeComponent();
@@ -52,7 +50,7 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             ShowUnavailable("读取失败");
-            DetailsButton.ToolTip = ex.Message;
+            StatusText.ToolTip = ex.Message;
         }
     }
 
@@ -60,7 +58,6 @@ public partial class MainWindow : Window
     {
         HealthText.Text = "—";
         StatusText.Text = message;
-        DetailsButton.IsEnabled = false;
     }
 
     private static string HealthLabel(double? health) => health switch
@@ -74,10 +71,4 @@ public partial class MainWindow : Window
     private static string FormatCapacity(uint? capacity) =>
         capacity is uint value ? $"{value:N0} mWh" : "设备未提供";
 
-    private void DetailsButton_Click(object sender, RoutedEventArgs e)
-    {
-        _detailsVisible = !_detailsVisible;
-        DetailsPanel.Visibility = _detailsVisible ? Visibility.Visible : Visibility.Collapsed;
-        DetailsButton.Content = _detailsVisible ? "收起详细信息" : "查看详细信息";
-    }
 }

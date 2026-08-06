@@ -11,5 +11,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Management" />
+    <Resource Include="app.ico" />
   </ItemGroup>
 </Project>
