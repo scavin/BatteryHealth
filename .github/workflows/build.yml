@@ -25,7 +25,7 @@ jobs:
         run: msbuild BatteryHealth.csproj /t:Restore /p:Configuration=Release
 
       - name: Build
-        run: msbuild BatteryHealth.csproj /p:Configuration=Release /p:Platform="Any CPU" /m
+        run: msbuild BatteryHealth.csproj /p:Configuration=Release /m
 
       - name: Package
         shell: powershell

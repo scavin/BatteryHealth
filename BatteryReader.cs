@@ -52,7 +52,8 @@ internal static class BatteryReader
 
     public static BatterySnapshot? Read()
     {
-        var set = SetupDiGetClassDevs(ref BatteryClassGuid, null, IntPtr.Zero, DigcfPresent | DigcfDeviceInterface);
+        var batteryClassGuid = BatteryClassGuid;
+        var set = SetupDiGetClassDevs(ref batteryClassGuid, null, IntPtr.Zero, DigcfPresent | DigcfDeviceInterface);
         if (set == new IntPtr(-1)) throw new Win32Exception(Marshal.GetLastWin32Error());
 
         try
@@ -60,7 +61,7 @@ internal static class BatteryReader
             for (uint index = 0; ; index++)
             {
                 var data = new SP_DEVICE_INTERFACE_DATA { cbSize = Marshal.SizeOf<SP_DEVICE_INTERFACE_DATA>() };
-                if (!SetupDiEnumDeviceInterfaces(set, IntPtr.Zero, ref BatteryClassGuid, index, ref data))
+                if (!SetupDiEnumDeviceInterfaces(set, IntPtr.Zero, ref batteryClassGuid, index, ref data))
                 {
                     if (Marshal.GetLastWin32Error() == 259) break;
                     continue;
