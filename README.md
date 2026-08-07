@@ -23,3 +23,7 @@
 - Windows 设备支持程度取决于电池固件；缺失字段会显示“设备未提供”。
 - 当前版本读取系统枚举到的第一块电池。
 - 目标系统：Windows 10/11。精简系统若移除了 .NET Framework 组件，需要重新启用该系统组件。
+
+## 许可证
+
+BatteryHealth 使用 [GNU Affero General Public License v3.0](LICENSE) 授权，采用 `AGPL-3.0-only`：你可以使用、研究、修改和分发本软件；分发修改版本或通过网络向用户提供修改版本的功能时，需要按照许可证提供对应源代码。
