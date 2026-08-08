@@ -7,6 +7,10 @@
     <Nullable>enable</Nullable>
     <AssemblyName>BatteryHealth</AssemblyName>
     <RootNamespace>BatteryHealth</RootNamespace>
+    <Authors>Scavin</Authors>
+    <Description>一个轻量的 Windows 电池健康查看器</Description>
+    <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/scavin/BatteryHealth</RepositoryUrl>
     <ApplicationIcon Condition="Exists('app.ico')">app.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
