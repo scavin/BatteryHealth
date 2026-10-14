@@ -1,8 +1,8 @@
 <Window x:Class="BatteryHealth.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Battery Health" Icon="app.ico" Width="480" Height="690"
-        MinWidth="420" MinHeight="620" WindowStartupLocation="CenterScreen"
+        Title="Battery Health" Icon="app.ico" Width="480" Height="730"
+        MinWidth="420" MinHeight="690" WindowStartupLocation="CenterScreen"
         Background="#F5F7FA" FontFamily="Segoe UI">
   <Window.Resources>
     <Style x:Key="LabelStyle" TargetType="TextBlock">
@@ -23,6 +23,7 @@
     <TextBlock Text="电池健康" FontSize="18" FontWeight="SemiBold" Foreground="#172033" />
 
     <Border Grid.Row="1" Margin="0,22,0,18" Padding="30" Background="White" CornerRadius="20">
+      <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
       <StackPanel HorizontalAlignment="Stretch">
         <TextBlock x:Name="HealthText" Text="—" FontSize="76" FontWeight="Bold"
                    HorizontalAlignment="Center" Foreground="#2563EB" />
@@ -42,6 +43,7 @@
           <Grid.RowDefinitions>
             <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
             <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+            <RowDefinition />
           </Grid.RowDefinitions>
           <TextBlock Text="电池名称" Style="{StaticResource LabelStyle}" />
           <TextBlock x:Name="NameValue" Grid.Column="1" Style="{StaticResource ValueStyle}" />
@@ -59,8 +61,12 @@
           <TextBlock x:Name="ChargeValue" Grid.Row="6" Grid.Column="1" Style="{StaticResource ValueStyle}" />
           <TextBlock Grid.Row="7" Text="当前状态" Style="{StaticResource LabelStyle}" />
           <TextBlock x:Name="PowerValue" Grid.Row="7" Grid.Column="1" Style="{StaticResource ValueStyle}" />
+          <TextBlock Grid.Row="8" Text="充电功率" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="ChargePowerValue" Grid.Row="8" Grid.Column="1" Style="{StaticResource ValueStyle}"
+                     ToolTip="实际进入电池的功率，每 5 秒更新；不代表充电器总输出。" />
         </Grid>
       </StackPanel>
+      </ScrollViewer>
     </Border>
 
     <TextBlock Grid.Row="2" Text="数据只在本机读取，不联网、不驻留后台" FontSize="12"

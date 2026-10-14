@@ -2,22 +2,40 @@ using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace BatteryHealth;
 
 public partial class MainWindow : Window
 {
+    private readonly DispatcherTimer refreshTimer = new() { Interval = TimeSpan.FromSeconds(5) };
+    private bool isReading;
+    private bool isClosed;
+
     public MainWindow()
     {
         InitializeComponent();
-        Loaded += async (_, _) => await LoadBatteryAsync();
+        refreshTimer.Tick += async (_, _) => await LoadBatteryAsync();
+        Loaded += async (_, _) =>
+        {
+            await LoadBatteryAsync();
+            if (!isClosed) refreshTimer.Start();
+        };
+        Closed += (_, _) =>
+        {
+            isClosed = true;
+            refreshTimer.Stop();
+        };
     }
 
     private async Task LoadBatteryAsync()
     {
+        if (isReading || isClosed) return;
+        isReading = true;
         try
         {
             var battery = await Task.Run(BatteryReader.Read);
+            if (isClosed) return;
             if (battery is null)
             {
                 ShowUnavailable("未检测到电池");
@@ -25,6 +43,7 @@ public partial class MainWindow : Window
             }
 
             var health = battery.HealthPercent;
+            StatusText.ToolTip = null;
             HealthText.Text = health is null ? "—" : $"{health:0}%";
             HealthBar.Value = health ?? 0;
             StatusText.Text = HealthLabel(health);
@@ -46,18 +65,26 @@ public partial class MainWindow : Window
             CycleValue.Text = battery.CycleCount is uint cycles ? $"{cycles:N0} 次" : "设备未提供";
             ChargeValue.Text = battery.ChargePercent is int charge ? $"{charge}%" : "设备未提供";
             PowerValue.Text = battery.PowerState;
+            ChargePowerValue.Text = battery.ChargePowerWatts is double watts
+                ? $"{watts:0.0} W" : "设备未提供";
         }
         catch (Exception ex)
         {
+            if (isClosed) return;
             ShowUnavailable("读取失败");
             StatusText.ToolTip = ex.Message;
         }
+        finally { isReading = false; }
     }
 
     private void ShowUnavailable(string message)
     {
         HealthText.Text = "—";
         StatusText.Text = message;
+        HealthBar.Value = 0;
+        NameValue.Text = ManufacturerValue.Text = DesignValue.Text = FullValue.Text =
+            WearValue.Text = CycleValue.Text = ChargeValue.Text = PowerValue.Text =
+            ChargePowerValue.Text = "—";
     }
 
     private static string HealthLabel(double? health) => health switch
