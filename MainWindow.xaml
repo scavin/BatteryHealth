@@ -12,6 +12,39 @@
       <Setter Property="Margin" Value="22,7,0,7"/><Setter Property="FontWeight" Value="SemiBold"/>
       <Setter Property="Foreground" Value="#263247"/><Setter Property="TextAlignment" Value="Right"/>
     </Style>
+    <Style x:Key="LangButtonStyle" TargetType="Button">
+      <Setter Property="Background" Value="#FFFFFF"/>
+      <Setter Property="Foreground" Value="#475467"/>
+      <Setter Property="BorderBrush" Value="#D0D5DD"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="FontWeight" Value="Medium"/>
+      <Setter Property="Padding" Value="10,3"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="6"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#F2F4F7"/>
+                <Setter Property="Foreground" Value="#1D2939"/>
+                <Setter Property="BorderBrush" Value="#B8C0CC"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter Property="Background" Value="#EAECF0"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
   </Window.Resources>
   <Grid Margin="28">
     <Grid.RowDefinitions>
@@ -20,7 +53,16 @@
       <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
-    <TextBlock Text="电池健康" FontSize="18" FontWeight="SemiBold" Foreground="#172033" />
+    <Grid Grid.Row="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
+      <TextBlock x:Name="TitleText" Text="电池健康" FontSize="18" FontWeight="SemiBold"
+                 Foreground="#172033" VerticalAlignment="Center" />
+      <Button x:Name="LangButton" Grid.Column="1" Content="English" Click="LangButton_Click"
+              Style="{StaticResource LangButtonStyle}" VerticalAlignment="Center" />
+    </Grid>
 
     <Border Grid.Row="1" Margin="0,22,0,18" Padding="30" Background="White" CornerRadius="20">
       <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -33,7 +75,7 @@
                      Foreground="#2563EB" Background="#E7ECF4" BorderThickness="0" />
 
         <Border Height="1" Margin="0,26,0,18" Background="#E7ECF4" />
-        <TextBlock Text="电池信息" Margin="0,0,0,8" FontSize="14" FontWeight="SemiBold"
+        <TextBlock x:Name="SectionTitleText" Text="电池信息" Margin="0,0,0,8" FontSize="14" FontWeight="SemiBold"
                    Foreground="#344054" />
         <Grid>
           <Grid.ColumnDefinitions>
@@ -45,23 +87,23 @@
             <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
             <RowDefinition />
           </Grid.RowDefinitions>
-          <TextBlock Text="电池名称" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="LabelNameText" Text="电池名称" Style="{StaticResource LabelStyle}" />
           <TextBlock x:Name="NameValue" Grid.Column="1" Style="{StaticResource ValueStyle}" />
-          <TextBlock Grid.Row="1" Text="制造商" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="LabelManufacturerText" Grid.Row="1" Text="制造商" Style="{StaticResource LabelStyle}" />
           <TextBlock x:Name="ManufacturerValue" Grid.Row="1" Grid.Column="1" Style="{StaticResource ValueStyle}" />
-          <TextBlock Grid.Row="2" Text="设计容量" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="LabelDesignText" Grid.Row="2" Text="设计容量" Style="{StaticResource LabelStyle}" />
           <TextBlock x:Name="DesignValue" Grid.Row="2" Grid.Column="1" Style="{StaticResource ValueStyle}" />
-          <TextBlock Grid.Row="3" Text="当前满充容量" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="LabelFullText" Grid.Row="3" Text="当前满充容量" Style="{StaticResource LabelStyle}" />
           <TextBlock x:Name="FullValue" Grid.Row="3" Grid.Column="1" Style="{StaticResource ValueStyle}" />
-          <TextBlock Grid.Row="4" Text="损耗" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="LabelWearText" Grid.Row="4" Text="损耗" Style="{StaticResource LabelStyle}" />
           <TextBlock x:Name="WearValue" Grid.Row="4" Grid.Column="1" Style="{StaticResource ValueStyle}" />
-          <TextBlock Grid.Row="5" Text="循环次数" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="LabelCycleText" Grid.Row="5" Text="循环次数" Style="{StaticResource LabelStyle}" />
           <TextBlock x:Name="CycleValue" Grid.Row="5" Grid.Column="1" Style="{StaticResource ValueStyle}" />
-          <TextBlock Grid.Row="6" Text="当前电量" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="LabelChargeText" Grid.Row="6" Text="当前电量" Style="{StaticResource LabelStyle}" />
           <TextBlock x:Name="ChargeValue" Grid.Row="6" Grid.Column="1" Style="{StaticResource ValueStyle}" />
-          <TextBlock Grid.Row="7" Text="当前状态" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="LabelPowerText" Grid.Row="7" Text="当前状态" Style="{StaticResource LabelStyle}" />
           <TextBlock x:Name="PowerValue" Grid.Row="7" Grid.Column="1" Style="{StaticResource ValueStyle}" />
-          <TextBlock Grid.Row="8" Text="充电功率" Style="{StaticResource LabelStyle}" />
+          <TextBlock x:Name="LabelChargePowerText" Grid.Row="8" Text="充电功率" Style="{StaticResource LabelStyle}" />
           <TextBlock x:Name="ChargePowerValue" Grid.Row="8" Grid.Column="1" Style="{StaticResource ValueStyle}"
                      ToolTip="实际进入电池的功率，每 5 秒更新；不代表充电器总输出。" />
         </Grid>
@@ -69,7 +111,7 @@
       </ScrollViewer>
     </Border>
 
-    <TextBlock Grid.Row="2" Text="数据只在本机读取，不联网、不驻留后台" FontSize="12"
+    <TextBlock x:Name="FooterText" Grid.Row="2" Text="数据只在本机读取，不联网、不驻留后台" FontSize="12"
                HorizontalAlignment="Center" Foreground="#8A94A6" />
   </Grid>
 </Window>
