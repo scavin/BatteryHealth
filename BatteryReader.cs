@@ -6,19 +6,27 @@ using System.Management;
 
 namespace BatteryHealth;
 
+public enum BatteryPowerState
+{
+    Unknown,
+    Charging,
+    Discharging,
+    PluggedIn
+}
+
 internal sealed class BatterySnapshot
 {
-    public string Name { get; }
-    public string Manufacturer { get; }
+    public string? Name { get; }
+    public string? Manufacturer { get; }
     public uint? DesignedCapacity { get; }
     public uint? FullChargedCapacity { get; }
     public uint? CycleCount { get; }
     public int? ChargePercent { get; }
-    public string PowerState { get; }
+    public BatteryPowerState PowerState { get; }
     public double? ChargePowerWatts { get; }
 
-    public BatterySnapshot(string name, string manufacturer, uint? designedCapacity,
-        uint? fullChargedCapacity, uint? cycleCount, int? chargePercent, string powerState,
+    public BatterySnapshot(string? name, string? manufacturer, uint? designedCapacity,
+        uint? fullChargedCapacity, uint? cycleCount, int? chargePercent, BatteryPowerState powerState,
         double? chargePowerWatts = null)
     {
         Name = name;
@@ -125,7 +133,7 @@ internal static class BatteryReader
             var battery = QueryFirst(@"root\cimv2", "SELECT Name, Status, EstimatedChargeRemaining, BatteryStatus FROM Win32_Battery");
             if (battery is null) return null;
 
-            var name = Convert.ToString(battery["Name"]) ?? "未知电池";
+            var name = Convert.ToString(battery["Name"]);
             var charge = ToInt(battery["EstimatedChargeRemaining"]);
             var batteryStatus = ToInt(battery["BatteryStatus"]);
             battery.Dispose();
@@ -133,7 +141,7 @@ internal static class BatteryReader
             var staticData = QueryFirst(@"root\wmi", "SELECT DesignedCapacity, DeviceName, ManufactureName FROM BatteryStaticData");
             var designed = ToUInt(staticData?["DesignedCapacity"]);
             name = Convert.ToString(staticData?["DeviceName"]) ?? name;
-            var manufacturer = Convert.ToString(staticData?["ManufactureName"]) ?? "设备未提供";
+            var manufacturer = Convert.ToString(staticData?["ManufactureName"]);
             staticData?.Dispose();
 
             var fullData = QueryFirst(@"root\wmi", "SELECT FullChargedCapacity FROM BatteryFullChargedCapacity");
@@ -198,12 +206,12 @@ internal static class BatteryReader
         catch (Exception) { return null; }
     }
 
-    private static string WmiPowerState(int? status) => status switch
+    private static BatteryPowerState WmiPowerState(int? status) => status switch
     {
-        1 => "使用电池",
-        2 or 3 or 11 => "使用电源",
-        >= 6 and <= 9 => "充电中",
-        _ => "状态未知"
+        1 => BatteryPowerState.Discharging,
+        2 or 3 or 11 => BatteryPowerState.PluggedIn,
+        >= 6 and <= 9 => BatteryPowerState.Charging,
+        _ => BatteryPowerState.Unknown
     };
 
     private static BatterySnapshot? ReadFromHandle(SafeFileHandle handle)
@@ -216,8 +224,8 @@ internal static class BatteryReader
         if (!DeviceIoControl(handle, IoctlQueryInformation, ref query, Marshal.SizeOf<BATTERY_QUERY_INFORMATION>(),
             out BATTERY_INFORMATION info, Marshal.SizeOf<BATTERY_INFORMATION>(), out _, IntPtr.Zero))
             throw new Win32Exception(Marshal.GetLastWin32Error());
-        var name = QueryString(handle, tag, BatteryQueryInformationLevel.BatteryDeviceName) ?? "未知电池";
-        var manufacturer = QueryString(handle, tag, BatteryQueryInformationLevel.BatteryManufactureName) ?? "设备未提供";
+        var name = QueryString(handle, tag, BatteryQueryInformationLevel.BatteryDeviceName);
+        var manufacturer = QueryString(handle, tag, BatteryQueryInformationLevel.BatteryManufactureName);
 
         var waitStatus = new BATTERY_WAIT_STATUS { BatteryTag = tag };
         BATTERY_STATUS? status = null;
@@ -231,10 +239,10 @@ internal static class BatteryReader
 
         var state = status?.PowerState switch
         {
-            uint s when (s & 0x4) != 0 => "充电中",
-            uint s when (s & 0x2) != 0 => "使用电池",
-            uint s when (s & 0x1) != 0 => "使用电源",
-            _ => "状态未知"
+            uint s when (s & 0x4) != 0 => BatteryPowerState.Charging,
+            uint s when (s & 0x2) != 0 => BatteryPowerState.Discharging,
+            uint s when (s & 0x1) != 0 => BatteryPowerState.PluggedIn,
+            _ => BatteryPowerState.Unknown
         };
 
         // Relative rates have no watt unit (mA). BATTERY_UNKNOWN_RATE is signed LONG_MIN.
