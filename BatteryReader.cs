@@ -15,9 +15,11 @@ internal sealed class BatterySnapshot
     public uint? CycleCount { get; }
     public int? ChargePercent { get; }
     public string PowerState { get; }
+    public double? ChargePowerWatts { get; }
 
     public BatterySnapshot(string name, string manufacturer, uint? designedCapacity,
-        uint? fullChargedCapacity, uint? cycleCount, int? chargePercent, string powerState)
+        uint? fullChargedCapacity, uint? cycleCount, int? chargePercent, string powerState,
+        double? chargePowerWatts = null)
     {
         Name = name;
         Manufacturer = manufacturer;
@@ -26,6 +28,7 @@ internal sealed class BatterySnapshot
         CycleCount = cycleCount;
         ChargePercent = chargePercent;
         PowerState = powerState;
+        ChargePowerWatts = chargePowerWatts;
     }
 
     public double? HealthPercent => DesignedCapacity > 0 && FullChargedCapacity.HasValue
@@ -141,7 +144,21 @@ internal static class BatteryReader
             var cycles = ToUInt(cycleData?["CycleCount"]);
             cycleData?.Dispose();
 
-            return new BatterySnapshot(name, manufacturer, designed, full, cycles, charge, WmiPowerState(batteryStatus));
+            var statusData = QueryFirst(@"root\wmi", "SELECT ChargeRate FROM BatteryStatus");
+            double? chargePower = null;
+            if (statusData?["ChargeRate"] is object crObj)
+            {
+                try
+                {
+                    var rateVal = Convert.ToDouble(crObj);
+                    if (rateVal >= 0 && rateVal < uint.MaxValue)
+                        chargePower = rateVal / 1000.0;
+                }
+                catch { }
+            }
+            statusData?.Dispose();
+
+            return new BatterySnapshot(name, manufacturer, designed, full, cycles, charge, WmiPowerState(batteryStatus), chargePower);
         }
         catch (ManagementException)
         {
@@ -220,9 +237,25 @@ internal static class BatteryReader
             _ => "状态未知"
         };
 
+        // Relative rates have no watt unit (mA). BATTERY_UNKNOWN_RATE is signed LONG_MIN.
+        // If relative unit is used and voltage is known, calculate power from mA * mV.
+        double? chargePower = null;
+        if (status is { Rate: var rate } && rate != int.MinValue)
+        {
+            var positiveRate = Math.Max(0, rate);
+            if ((info.Capabilities & 0x40000000) == 0)
+            {
+                chargePower = positiveRate / 1000.0;
+            }
+            else if (status.Value.Voltage is var voltage && voltage != uint.MaxValue && voltage > 0)
+            {
+                chargePower = positiveRate * (double)voltage / 1_000_000.0;
+            }
+        }
+
         return new BatterySnapshot(name, manufacturer,
             ValidCapacity(info.DesignedCapacity), ValidCapacity(info.FullChargedCapacity),
-            info.CycleCount == uint.MaxValue ? null : info.CycleCount, charge, state);
+            info.CycleCount == uint.MaxValue ? null : info.CycleCount, charge, state, chargePower);
     }
 
     private static uint? ValidCapacity(uint value) => value is 0 or uint.MaxValue ? null : value;
