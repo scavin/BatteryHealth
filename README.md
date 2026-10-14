@@ -1,33 +1,35 @@
 # Battery Health
 
-一个极简的 Windows 电池健康查看器。打开后立即读取 Windows Battery Class Driver，显示健康度；展开后可查看容量、损耗、循环次数等信息。
+[简体中文](readme-cn.md)
 
-## 构建
+A minimalistic battery health viewer for Windows. Reads from the Windows Battery Class Driver immediately on launch to display battery health; also provides detailed battery information including capacity, wear level, cycle count, and charging rate.
 
-构建电脑需要 Windows、Visual Studio 2022，或 .NET SDK 加上 .NET Framework 4.8 Developer Pack。
+## Build
 
-在 PowerShell 中运行：
+Building requires Windows, Visual Studio 2022, or the .NET SDK with .NET Framework 4.8 Developer Pack.
+
+Run in PowerShell:
 
 ```powershell
 .\build.ps1
 ```
 
-每次推送到 `main`、提交 Pull Request 或手动触发 GitHub Actions 时，也会在 Windows 环境自动编译。构建结果可在对应 Actions 运行页面的 Artifacts 中下载。
+A Windows build is also automatically compiled via GitHub Actions on every push to `main`, Pull Request, or manual workflow dispatch. Build artifacts can be downloaded from the corresponding GitHub Actions run page.
 
-生成的 `BatteryHealth.exe` 是小体积单文件程序，不需要管理员权限。普通 Windows 10/11 通常已包含 .NET Framework 4.8，因此用户不需要安装 SDK 或额外运行库。
+The generated `BatteryHealth.exe` is a lightweight, single-file executable that requires no administrator privileges. Standard Windows 10/11 installations already include .NET Framework 4.8, so users do not need to install SDKs or extra runtimes.
 
-## 说明
+## Features & Notes
 
-- 不联网，不写注册表，不驻留后台。
-- 健康度 = 当前满充容量 ÷ 设计容量。
-- Windows 设备支持程度取决于电池固件；缺失字段会显示“设备未提供”。
-- 当前版本读取系统枚举到的第一块电池。
-- 窗口打开时每 5 秒刷新数据，关闭后停止读取。
-- 充电功率来自 Windows 电池驱动的充放电速率，单位为 W，表示进入电池的功率，不代表充电器总输出；有效速率为零或正在放电时显示 `0.0 W`。
-- 驱动未提供速率、相对单位缺少电压数据，或底层未暴露功率数据时，充电功率显示“设备未提供”。部分设备只提供放电速率，充电时可能无法显示功率。
-- 支持中英文双语界面：跟随系统语言自动显示（非中文环境默认英文），也可在窗口右上角随时点击切换。
-- 目标系统：Windows 10/11。精简系统若移除了 .NET Framework 组件，需要重新启用该系统组件。
+- No internet access, no registry changes, and no background residency.
+- Battery Health = Full Charge Capacity ÷ Design Capacity.
+- Device support depends on battery firmware; unavailable fields will display "Not available".
+- Currently reads the first battery enumerated by the system.
+- Automatically refreshes data every 5 seconds while the window is open, and stops reading when closed.
+- Charge rate is retrieved from the Windows battery driver rate metric in Watts (W), indicating actual power entering the battery, which does not represent total charger output. Displays `0.0 W` when not charging (idle or discharging).
+- If the driver does not provide rate metrics, uses relative units without voltage data, or does not expose power data, "Not available" is displayed. Some devices only report discharge rates and may not display charge rate while charging.
+- Bilingual interface (English / Simplified Chinese): automatically adapts to system language (defaults to English on non-Chinese systems) and can be toggled anytime via the button in the top-right corner.
+- Target OS: Windows 10/11. If using a stripped-down/lite Windows edition where .NET Framework 4.8 was removed, re-enable this system component first.
 
-## 许可证
+## License
 
-BatteryHealth 使用 [GNU Affero General Public License v3.0](LICENSE) 授权，采用 `AGPL-3.0-only`：你可以使用、研究、修改和分发本软件；分发修改版本或通过网络向用户提供修改版本的功能时，需要按照许可证提供对应源代码。
+BatteryHealth is licensed under the [GNU Affero General Public License v3.0](LICENSE) (`AGPL-3.0-only`): you are free to use, study, modify, and distribute this software; if you distribute a modified version or provide modified functionality over a network, you must make the corresponding source code available under the terms of the license.
